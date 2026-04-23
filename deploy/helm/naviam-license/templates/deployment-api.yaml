@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "naviam-license.fullname" . }}-api
+  labels:
+    {{- include "naviam-license.labels" . | nindent 4 }}
+    component: api
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "naviam-license.selectorLabels" . | nindent 6 }}
+      component: api
+  template:
+    metadata:
+      labels:
+        {{- include "naviam-license.selectorLabels" . | nindent 8 }}
+        component: api
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}-api:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: DATABASE_TYPE
+              value: "postgresql+psycopg"
+            - name: DATABASE_HOST
+              value: "{{ include "naviam-license.fullname" . }}-postgresql"
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_USERNAME
+              value: "{{ .Values.postgresql.auth.username }}"
+            - name: DATABASE_PASSWORD
+              value: "{{ .Values.postgresql.auth.password }}"
+            - name: DATABASE_NAME
+              value: "{{ .Values.postgresql.auth.database }}"
+            - name: REDIS_TYPE
+              value: "redis"
+            - name: REDIS_HOST
+              value: "{{ include "naviam-license.fullname" . }}-redis-master"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_USERNAME
+              value: "{{ .Values.redis.auth.username }}"
+            - name: REDIS_PASSWORD
+              value: "{{ .Values.redis.auth.password }}"
+            - name: REDIS_DB
+              value: "0"
+            - name: LICENSE_PRIVATE_KEY_PATH
+              value: "/app/keys/private.pem"
+            - name: LICENSE_PUBLIC_KEY_PATH
+              value: "/app/keys/public.pem"
+            - name: SESSION_SECURE
+              value: "true"
+          volumeMounts:
+            - name: rsa-keys
+              mountPath: /app/keys
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: rsa-keys
+          secret:
+            secretName: {{ .Values.rsaKeys.existingSecret }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,74 @@
+replicaCount: 1
+
+image:
+  repository: naviam/license
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+  hosts:
+    - host: license.naviam.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: naviam-license-tls
+      hosts:
+        - license.naviam.local
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Independent infrastructure
+postgresql:
+  enabled: true
+  auth:
+    username: naviam_postgres
+    password: Postgres@!QAZxsw2.
+    database: naviam_postgres
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    username: naviam_redis
+    password: Redis@!QAZxsw2.
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+
+# RSA keys (base64 encoded, should be provided via secrets)
+rsaKeys:
+  existingSecret: "naviam-license-rsa-keys"

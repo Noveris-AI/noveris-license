@@ -1,0 +1,29 @@
+{
+  "login": {
+    "title": "License 管理平台",
+    "email": "邮箱",
+    "password": "密码",
+    "submit": "登录",
+    "error": "邮箱或密码错误"
+  },
+  "dashboard": {
+    "title": "License 管理",
+    "issue_new": "签发新 License",
+    "logout": "退出登录"
+  },
+  "license": {
+    "customer_name": "客户名称",
+    "max_nodes": "最大节点数",
+    "max_gpus": "最大 GPU 数",
+    "expires_at": "过期时间",
+    "cluster_id": "集群 ID",
+    "issue": "确认签发",
+    "revoke": "吊销 License",
+    "detail": "详情",
+    "copy": "复制",
+    "download": "下载",
+    "status_active": "有效",
+    "status_expired": "已过期",
+    "status_revoked": "已吊销"
+  }
+}

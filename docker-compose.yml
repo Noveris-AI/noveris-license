@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: naviam_postgres
+      POSTGRES_PASSWORD: Postgres@!QAZxsw2.
+      POSTGRES_DB: naviam_postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U naviam_postgres -d naviam_postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    environment:
+      REDIS_USERNAME: naviam_redis
+      REDIS_PASSWORD: Redis@!QAZxsw2.
+    command:
+      - sh
+      - -c
+      - exec redis-server --appendonly yes --user default off --user "$$REDIS_USERNAME" on ">$$REDIS_PASSWORD" "~*" "&*" "+@all"
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --user \"$${REDIS_USERNAME}\" --pass \"$${REDIS_PASSWORD}\" ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_TYPE: postgresql+psycopg
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_USERNAME: naviam_postgres
+      DATABASE_PASSWORD: Postgres@!QAZxsw2.
+      DATABASE_NAME: naviam_postgres
+      REDIS_TYPE: redis
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_USERNAME: naviam_redis
+      REDIS_PASSWORD: Redis@!QAZxsw2.
+      REDIS_DB: "0"
+      LICENSE_PRIVATE_KEY_PATH: /app/keys/private.pem
+      LICENSE_PUBLIC_KEY_PATH: /app/keys/public.pem
+      SESSION_SECURE: "false"
+    volumes:
+      - ./keys:/app/keys:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:

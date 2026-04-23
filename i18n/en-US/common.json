@@ -1,0 +1,29 @@
+{
+  "login": {
+    "title": "License Management Platform",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Login",
+    "error": "Invalid email or password"
+  },
+  "dashboard": {
+    "title": "License Management",
+    "issue_new": "Issue New License",
+    "logout": "Logout"
+  },
+  "license": {
+    "customer_name": "Customer Name",
+    "max_nodes": "Max Nodes",
+    "max_gpus": "Max GPUs",
+    "expires_at": "Expires At",
+    "cluster_id": "Cluster ID",
+    "issue": "Issue",
+    "revoke": "Revoke License",
+    "detail": "Detail",
+    "copy": "Copy",
+    "download": "Download",
+    "status_active": "Active",
+    "status_expired": "Expired",
+    "status_revoked": "Revoked"
+  }
+}
